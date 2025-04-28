@@ -330,6 +330,55 @@ class nanosphere{
 	return reso;
 	}
 
+    double *dephased_frohlich(double a0, double b0, double eps_b, double eps_s=0, double rap=0){
+	static double reso[2]={};
+	double ome_sp, Gth;
+	double eqn9_A, eqn9_D, a, b, d, e;    //declare some needed variables
+	double rap3=rap*rap*rap;
+	std::complex<double> eps1_A, eps1_B, eps1_D, F_A, F_B, F_D;
+	e = 1.e-10;
+
+	double ome_sm=666.;
+	double ome21;//, eps_im
+	a=a0;
+	b=b0;
+	ome_sp =.5*(b0+a0);
+	ome_sm=666.;
+	while (abs(ome_sp-ome_sm)>1.e-20){ /* ome_sp dipende da rho e da ome21, riposiziono ome21 su ome_sp in modo che sia solo funzione di rho*/
+	    ome21=ome_sp;
+	    a=a0;
+	    b=b0;
+	    while (fabs(a-b)>=e){   /*if the mod of a-b is greater than the accuracy desired keep bisecting the interval*/
+		
+		d=0.5*(a+b);        //bisect the interval and find the value of c
+
+		eps1_A = metal(a);
+		F_A = F(eps1_A, eps_s, rap3);
+		eqn9_A = eqn9(a, ome21, F_A, eps_b, Dome);
+
+		eps1_D = metal(d);
+		F_D = F(eps1_D, eps_s, rap3);
+		eqn9_D = eqn9(d, ome21, F_D, eps_b, Dome);        
+
+		if (eqn9_D*eqn9_A<=0.){    
+		    b=d;    
+		    }
+		else{
+		    a=d;    
+		    }
+		}
+	ome_sm=ome_sp;
+	ome_sp = d;   // spasing freq
+	}
+	ome_sp   = ome_sp;
+	Gth = Dome*imag(F_D)/Dome;
+	
+	reso[0]=ome_sp;
+	reso[1]=Gth;
+	
+	return reso;
+	}
+
     std::complex<double> set_GG(double G, double tau2){
 		std::complex<double> GG;
 		GG   = -img*fabs(G)/tau2;
